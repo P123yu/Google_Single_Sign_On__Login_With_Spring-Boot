@@ -115,3 +115,15 @@ spring.security.oauth2.client.registration.google.client-name=google
 spring.security.oauth2.client.registration.google.client-id=748680768954-ft2o4519gqertnt08vbbkp5vv91omqjb.apps.googleusercontent.com
 spring.security.oauth2.client.registration.google.client-secret=
 spring.security.oauth2.client.registration.google.client-scope=email,profile
+
+
+
+
+
+
+
+
+
+
+// http://localhost:8080/oauth2/authorization/google
+// http://localhost:8080/login
