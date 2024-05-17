@@ -1,0 +1,107 @@
+package com.test.TestSec.config;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+import java.io.IOException;
+
+@Component
+public class AuthHandle implements AuthenticationSuccessHandler {
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        response.sendRedirect("/api/second");
+    }
+}
+
+
+
+
+
+
+
+
+package com.test.TestSec.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+//import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class TestConfig {
+
+    @Autowired
+    private AuthHandle authHandle;
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(req -> req.requestMatchers("/api/get").permitAll()
+                        .requestMatchers("/api/second").authenticated())
+                .oauth2Login(oath->{
+                    oath.successHandler(authHandle);
+                })
+                .build();
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package com.test.TestSec.controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+@RequestMapping("/api")
+public class TestController {
+    @GetMapping("/get")
+    public String getString() {
+        return "hello";
+    }
+
+    // Define the second endpoint to demonstrate the flow
+    @GetMapping("/second")
+    public String getSecondString() {
+        return "second endpoint response";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+spring.application.name=TestSec
+spring.main.allow-circular-references=true
+
+
+spring.security.oauth2.client.registration.google.client-name=google
+spring.security.oauth2.client.registration.google.client-id=748680768954-ft2o4519gqertnt08vbbkp5vv91omqjb.apps.googleusercontent.com
+spring.security.oauth2.client.registration.google.client-secret=
+spring.security.oauth2.client.registration.google.client-scope=email,profile
