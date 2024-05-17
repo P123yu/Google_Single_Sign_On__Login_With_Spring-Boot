@@ -1,0 +1,302 @@
+// UserModel 
+
+package com.test.TestSec.model;
+import jakarta.persistence.*;
+import lombok.*;
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserModel {
+
+    @Id
+    private String userId;
+    private String name;
+    private String email;
+    private String picture;
+    private String provider;
+
+}
+
+
+// userRepository
+
+package com.test.TestSec.repository;
+import com.test.TestSec.model.UserModel;
+import org.springframework.data.jpa.repository.JpaRepository;
+public interface UserRepository extends JpaRepository<UserModel,String> {
+}
+
+
+// TestController
+
+
+
+package com.test.TestSec.controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+@RequestMapping("/api")
+public class TestController {
+    @GetMapping("/get")
+    public String getString() {
+        return "hello";
+    }
+
+    // Define the second endpoint to demonstrate the flow
+    @GetMapping("/second")
+    public String getSecondString() {
+        return "second endpoint response";
+    }
+}
+
+
+
+// CONFIG
+
+// TestConfig
+
+
+package com.test.TestSec.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+//import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class TestConfig {
+
+    @Autowired
+    private AuthHandle authHandle;
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(req -> req.requestMatchers("/api/get").permitAll()
+                        .requestMatchers("/api/second").authenticated())
+                .oauth2Login(oath->{
+                    oath.successHandler(authHandle);
+                })
+                .build();
+    }
+}
+
+
+
+// AuthHandle
+
+//package com.test.TestSec.config;
+//import com.test.TestSec.model.UserModel;
+//import com.test.TestSec.repository.UserRepository;
+//import jakarta.servlet.ServletException;
+//import jakarta.servlet.http.HttpServletRequest;
+//import jakarta.servlet.http.HttpServletResponse;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.security.core.Authentication;
+//import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+//import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+//import org.springframework.stereotype.Component;
+//import java.io.IOException;
+//import java.util.UUID;
+//
+//@Component
+//public class AuthHandle implements AuthenticationSuccessHandler {
+//
+//    @Autowired
+//    private UserRepository userRepository;
+//
+//    @Override
+//    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+//
+//        // we can save data to our database before redirection pf page
+//
+//        // get principal from authentication
+//        DefaultOAuth2User user=(DefaultOAuth2User)authentication.getPrincipal();
+//
+//
+//        System.out.print(user.getName());
+//        user.getAttributes().forEach((key,value)->{
+//            System.out.println(key+""+value);
+//        });
+//
+//
+//        String email=user.getAttributes().toString();
+//        String name=user.getAttributes().toString();
+//        String picture=user.getAttributes("picture").toString();
+//
+//        UserModel user1=new UserModel();
+//
+//        user1.setUserId(UUID.randomUUID().toString());
+//        user1.setName(name);
+//        user1.setEmail(email);
+//        user1.setPicture(picture);
+//        user1.setProvider("Google");
+//
+//        userRepository.save(user1);
+//
+//        response.sendRedirect("/api/second");
+//    }
+//}
+
+
+package com.test.TestSec.config;
+
+import com.test.TestSec.model.UserModel;
+import com.test.TestSec.repository.UserRepository;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
+
+@Component
+public class AuthHandle implements AuthenticationSuccessHandler {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+
+        // Get principal from authentication
+        DefaultOAuth2User user = (DefaultOAuth2User) authentication.getPrincipal();
+
+        System.out.print(user.getName());
+        user.getAttributes().forEach((key, value) -> {
+            System.out.println(key + ": " + value);
+        });
+
+        // Extracting user details from OAuth2 user attributes
+        Map<String, Object> attributes = user.getAttributes();
+        String email = (String) attributes.get("email");
+        String name = (String) attributes.get("name");
+        String picture = (String) attributes.get("picture");
+
+        // Create a new UserModel and populate it with the user's details
+        UserModel user1 = new UserModel();
+        user1.setUserId(UUID.randomUUID().toString());
+        user1.setName(name);
+        user1.setEmail(email);
+        user1.setPicture(picture);
+        user1.setProvider("Google"); // Assuming provider is stored as a string in UserModel
+
+        // Save the user to the repository
+        userRepository.save(user1);
+
+        // Redirect to the specified URL
+        response.sendRedirect("/api/second");
+    }
+}
+
+
+
+// Application Properties
+
+spring.application.name=TestSec
+# spring.main.allow-circular-references=true
+
+
+spring.datasource.url=jdbc:mysql://localhost:3306/google_data
+spring.datasource.username=root
+spring.datasource.password=Piyush@l1
+spring.jpa.show-sql=true
+spring.jpa.generate-ddl=true
+spring.jpa.hibernate.ddl-auto=update
+
+
+
+
+spring.security.oauth2.client.registration.google.client-name=google
+spring.security.oauth2.client.registration.google.client-id=748680768954-ft2o4519gqertnt08vbbkp5vv91omqjb.apps.googleusercontent.com
+spring.security.oauth2.client.registration.google.client-secret=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
+spring.security.oauth2.client.registration.google.client-scope=email,profile
+
+
+
+
+
+// pom.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.5</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>demo</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>demo</name>
+	<description>Demo project for Spring Boot</description>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+
+
