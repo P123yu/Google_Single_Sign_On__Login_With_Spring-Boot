@@ -19,6 +19,16 @@ public class AuthHandle implements AuthenticationSuccessHandler {
 
 
 
+// for seeing authentication page 
+
+http://localhost:8080/oauth2/authorization/google
+
+
+// for seeing login page
+
+http://localhost:8080/login
+
+
 
 
 
