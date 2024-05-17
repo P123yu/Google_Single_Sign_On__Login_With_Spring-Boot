@@ -91,62 +91,7 @@ public class TestConfig {
 
 // AuthHandle
 
-//package com.test.TestSec.config;
-//import com.test.TestSec.model.UserModel;
-//import com.test.TestSec.repository.UserRepository;
-//import jakarta.servlet.ServletException;
-//import jakarta.servlet.http.HttpServletRequest;
-//import jakarta.servlet.http.HttpServletResponse;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-//import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-//import org.springframework.stereotype.Component;
-//import java.io.IOException;
-//import java.util.UUID;
-//
-//@Component
-//public class AuthHandle implements AuthenticationSuccessHandler {
-//
-//    @Autowired
-//    private UserRepository userRepository;
-//
-//    @Override
-//    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-//
-//        // we can save data to our database before redirection pf page
-//
-//        // get principal from authentication
-//        DefaultOAuth2User user=(DefaultOAuth2User)authentication.getPrincipal();
-//
-//
-//        System.out.print(user.getName());
-//        user.getAttributes().forEach((key,value)->{
-//            System.out.println(key+""+value);
-//        });
-//
-//
-//        String email=user.getAttributes().toString();
-//        String name=user.getAttributes().toString();
-//        String picture=user.getAttributes("picture").toString();
-//
-//        UserModel user1=new UserModel();
-//
-//        user1.setUserId(UUID.randomUUID().toString());
-//        user1.setName(name);
-//        user1.setEmail(email);
-//        user1.setPicture(picture);
-//        user1.setProvider("Google");
-//
-//        userRepository.save(user1);
-//
-//        response.sendRedirect("/api/second");
-//    }
-//}
-
-
 package com.test.TestSec.config;
-
 import com.test.TestSec.model.UserModel;
 import com.test.TestSec.repository.UserRepository;
 import jakarta.servlet.ServletException;
